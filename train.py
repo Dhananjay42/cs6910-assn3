@@ -806,4 +806,8 @@ def main(argv):
     with open('model.pkl', 'wb') as file:
         pickle.dump(model, file)
         print('Model successfully saved.')
+    
+if __name__ == "__main__":
+   main(sys.argv[1:])
+    
 
