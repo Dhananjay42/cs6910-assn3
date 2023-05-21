@@ -1,5 +1,4 @@
 import csv
-from __future__ import unicode_literals, print_function, division
 from io import open
 import unicodedata
 import string
@@ -757,55 +756,55 @@ def main(argv):
       print('Follow the format to run the script.')
       sys.exit()
     
-    if attn_flag == False:
-      params['n_layers'] = n_layers
+  if attn_flag == False:
+    params['n_layers'] = n_layers
     
-    #loading data
-    x_train, y_train = obtain_data(data_dir + language_prefix + '_train.csv')
-    x_test, y_test = obtain_data(data_dir + language_prefix + '_test.csv')
-    x_val, y_val = obtain_data(data_dir + language_prefix + '_valid.csv')
+  #loading data
+  x_train, y_train = obtain_data(data_dir + language_prefix + '_train.csv')
+  x_test, y_test = obtain_data(data_dir + language_prefix + '_test.csv')
+  x_val, y_val = obtain_data(data_dir + language_prefix + '_valid.csv')
 
-    english = Language('eng')
-    lang = Language('out_lang')
-    english.update_vocab(x_train)
-    lang.update_vocab(y_train)
+  english = Language('eng')
+  lang = Language('out_lang')
+  english.update_vocab(x_train)
+  lang.update_vocab(y_train)
 
-    train_data = get_pairs(english, lang, x_train, y_train)
-    test_data = get_pairs(english, lang, x_test, y_test)
-    val_data = get_pairs(english, lang, x_val, y_val)
+  train_data = get_pairs(english, lang, x_train, y_train)
+  test_data = get_pairs(english, lang, x_test, y_test)
+  val_data = get_pairs(english, lang, x_val, y_val)
 
-    training_pairs = [random.choice(train_data) for i in range(0, n_iters)]
+  training_pairs = [random.choice(train_data) for i in range(0, n_iters)]
 
-    #initializing model
-    if attn_flag:
-      model = seq2seq_attn(inp_language = english, out_language = lang, **params)
-    else:
-      model = seq2seq_vanilla(inp_language = english, out_language = lang, **params)
+  #initializing model
+  if attn_flag:
+    model = seq2seq_attn(inp_language = english, out_language = lang, **params)
+  else:
+    model = seq2seq_vanilla(inp_language = english, out_language = lang, **params)
 
-    train_loss = 0
+  train_loss = 0
 
-    one_every = n_iters//15
+  one_every = n_iters//15
 
-    for i in range(0, n_iters):
-        training_pair = training_pairs[i]
-        x = training_pair[0]
-        y = training_pair[1]
-        loss = model.train_step(x, y)
-        train_loss = train_loss + loss
+  for i in range(0, n_iters):
+    training_pair = training_pairs[i]
+    x = training_pair[0]
+    y = training_pair[1]
+    loss = model.train_step(x, y)
+    train_loss = train_loss + loss
 
-        if (i+1)%one_every == 0:
-            print('------------------------------------------------')
-            print('train loss is:', train_loss/one_every)
-            if attn_flag:
-              test_acc, char_acc = model.evaluate(val_data, print_flag)
-            else:
-              test_acc, char_acc = model.evaluate_beam(val_data, beam_size, print_flag)
-            print(f'test accuracy is {test_acc} and character-wise accuracy is {char_acc}')
-            train_loss = 0
+    if (i+1)%one_every == 0:
+      print('------------------------------------------------')
+      print('train loss is:', train_loss/one_every)
+      if attn_flag:
+        test_acc, char_acc = model.evaluate(val_data, print_flag)
+      else:
+        test_acc, char_acc = model.evaluate_beam(val_data, beam_size, print_flag)
+      print(f'test accuracy is {test_acc} and character-wise accuracy is {char_acc}')
+      train_loss = 0
     
-    with open('model.pkl', 'wb') as file:
-        pickle.dump(model, file)
-        print('Model successfully saved.')
+  with open('model.pkl', 'wb') as file:
+    pickle.dump(model, file)
+    print('Model successfully saved.')
     
 if __name__ == "__main__":
    main(sys.argv[1:])
